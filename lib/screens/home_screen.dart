@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:jintimer/widget/timer_bg_painter.dart';
-import 'package:jintimer/widget/timer_hand_painter.dart';
+import 'package:jintimer/widget/watch_face.dart';
 
 class MyHomeScreen extends StatefulWidget {
   const MyHomeScreen({super.key});
@@ -12,19 +11,12 @@ class MyHomeScreen extends StatefulWidget {
 
 class _MyHomeScreenState extends State<MyHomeScreen>
     with TickerProviderStateMixin {
-  late AnimationController _controller;
   late Timer _timer;
   int _remainingTime = 3600; // Initial time in seconds (1 hour)
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: _remainingTime),
-    );
-    _controller.reverse(
-        from: _controller.value == 0.0 ? 1.0 : _controller.value);
 
     _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       setState(() {
@@ -39,7 +31,6 @@ class _MyHomeScreenState extends State<MyHomeScreen>
 
   @override
   void dispose() {
-    _controller.dispose();
     _timer.cancel();
     super.dispose();
   }
@@ -58,27 +49,10 @@ class _MyHomeScreenState extends State<MyHomeScreen>
               style: const TextStyle(fontSize: 40.0),
             ),
           ),
-          Flexible(
+          const Flexible(
             flex: 1,
-            child: Container(
-              alignment: Alignment.center,
-              child: Stack(
-                children: [
-                  CustomPaint(
-                    painter: TimerBackgroundPainter(),
-                    size: const Size(300.0, 300.0),
-                  ),
-                  CustomPaint(
-                    painter: TimerHandPainter(
-                      animation: StepTween(
-                        begin: 0,
-                        end: _remainingTime,
-                      ).animate(_controller),
-                    ),
-                    size: const Size(300.0, 300.0),
-                  ),
-                ],
-              ),
+            child: WatchFace(
+              setBgColor: Color.fromARGB(255, 210, 42, 42),
             ),
           ),
           Flexible(
@@ -95,6 +69,7 @@ class _MyHomeScreenState extends State<MyHomeScreen>
     );
   }
 }
+
 /*-
 void _showTimePickerDialog(BuildContext context) {
   showDialog(

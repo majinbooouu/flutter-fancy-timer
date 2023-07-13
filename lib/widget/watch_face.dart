@@ -1,6 +1,54 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+class WatchFace extends StatelessWidget {
+  final Color setBgColor;
+  const WatchFace({
+    super.key,
+    required this.setBgColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      child: Stack(
+        children: [
+          CustomPaint(
+            painter: TimerBackgroundPainter(setBgColor),
+            size: const Size(300.0, 300.0),
+          ),
+          CustomPaint(
+            painter: TimerHandPainter(),
+            size: const Size(300.0, 300.0),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class TimerBackgroundPainter extends CustomPainter {
+  final Color bgColor;
+
+  TimerBackgroundPainter(this.bgColor);
+  @override
+  void paint(Canvas canvas, Size size) {
+    final centerX = size.width / 2;
+    final centerY = size.height / 2;
+    final radius = size.width / 2;
+
+    final backgroundPaint = Paint()
+      ..color = bgColor
+      ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(Offset(centerX, centerY), radius, backgroundPaint);
+  }
+
+  @override
+  bool shouldRepaint(TimerBackgroundPainter oldDelegate) => false;
+}
+
 class TimerHandPainter extends CustomPainter {
   final Animation<int>? animation;
 
