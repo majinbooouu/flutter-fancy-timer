@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:jintimer/widget/timer_bg_painter.dart';
 import 'package:jintimer/widget/timer_hand_painter.dart';
@@ -48,47 +47,55 @@ class _MyHomeScreenState extends State<MyHomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: SizedBox(
-          width: 300.0,
-          height: 300.0,
-          child: Stack(
-            children: [
-              CustomPaint(
-                painter: TimerBackgroundPainter(),
-                size: const Size(300.0, 300.0),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Flexible(
+            flex: 1,
+            child: Text(
+              '${_remainingTime ~/ 60}:${(_remainingTime % 60).toString().padLeft(2, '0')}',
+              style: const TextStyle(fontSize: 40.0),
+            ),
+          ),
+          Flexible(
+            flex: 1,
+            child: Container(
+              alignment: Alignment.center,
+              child: Stack(
+                children: [
+                  CustomPaint(
+                    painter: TimerBackgroundPainter(),
+                    size: const Size(300.0, 300.0),
+                  ),
+                  CustomPaint(
+                    painter: TimerHandPainter(
+                      animation: StepTween(
+                        begin: 0,
+                        end: _remainingTime,
+                      ).animate(_controller),
+                    ),
+                    size: const Size(300.0, 300.0),
+                  ),
+                ],
               ),
-              CustomPaint(
-                painter: TimerHandPainter(
-                  animation: StepTween(
-                    begin: 0,
-                    end: _remainingTime,
-                  ).animate(_controller),
-                ),
-                size: const Size(300.0, 300.0),
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: Text(
-                  '${_remainingTime ~/ 60}:${(_remainingTime % 60).toString().padLeft(2, '0')}',
-                  style: const TextStyle(fontSize: 40.0),
-                ),
-              ),
-              const SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () {
-                  _showTimePickerDialog(context);
-                },
+            ),
+          ),
+          Flexible(
+            flex: 1,
+            child: Container(
+              child: ElevatedButton(
+                onPressed: () {},
                 child: const Text('Set Timer'),
               ),
-            ],
-          ),
-        ),
+            ),
+          )
+        ],
       ),
     );
   }
 }
-
+/*-
 void _showTimePickerDialog(BuildContext context) {
   showDialog(
     context: context,
@@ -149,4 +156,4 @@ class FlutterTimerPicker extends StatelessWidget {
       ),
     );
   }
-}
+} */
