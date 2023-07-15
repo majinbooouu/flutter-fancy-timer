@@ -52,7 +52,7 @@ class _MyHomeScreenState extends State<MyHomeScreen>
           const Flexible(
             flex: 1,
             child: WatchFace(
-              setBgColor: Color.fromARGB(255, 210, 42, 42),
+              setBgColor: Color.fromARGB(255, 255, 255, 255),
             ),
           ),
           Flexible(

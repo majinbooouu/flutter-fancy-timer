@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-class WatchFace extends StatelessWidget {
+class WatchFace extends StatefulWidget {
   final Color setBgColor;
   const WatchFace({
     super.key,
@@ -9,23 +9,78 @@ class WatchFace extends StatelessWidget {
   });
 
   @override
+  State<WatchFace> createState() => _WatchFaceState();
+}
+
+class _WatchFaceState extends State<WatchFace> {
+  double sweepAngle = pi;
+  double startTouchAngle = 0;
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.center,
-      child: Stack(
-        children: [
-          CustomPaint(
-            painter: TimerBackgroundPainter(setBgColor),
-            size: const Size(300.0, 300.0),
-          ),
-          CustomPaint(
-            painter: TimerHandPainter(),
-            size: const Size(300.0, 300.0),
-          ),
-        ],
+      child: GestureDetector(
+        onPanStart: (details) {
+          setState(() {
+            final startPosition = details.localPosition;
+            final touchAngle = atan2(
+              startPosition.dy - 100,
+              startPosition.dx - 100,
+            );
+            startTouchAngle = touchAngle;
+          });
+        },
+        onPanUpdate: (details) {
+          setState(() {
+            final touchPosition = details.localPosition;
+            final touchAngle = atan2(
+              touchPosition.dy - 100,
+              touchPosition.dx - 100,
+            );
+            sweepAngle = touchAngle - startTouchAngle;
+            print('touchAngle: $touchAngle');
+            print('startTouchAngle: $touchAngle');
+            print('sweepAngle: $sweepAngle');
+          });
+        },
+        child: Stack(
+          children: [
+            CustomPaint(
+              painter: TimerBackgroundPainter(widget.setBgColor),
+              size: const Size(300.0, 300.0),
+            ),
+            CustomPaint(
+              painter: TimeArcPainter(sweepAngle),
+            ),
+            CustomPaint(
+              painter: TimerHandPainter(),
+              size: const Size(300.0, 300.0),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+class TimeArcPainter extends CustomPainter {
+  final double sweepAngle;
+
+  TimeArcPainter(this.sweepAngle);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Rect myRect = const Offset(0.0, 0.0) & const Size(300, 300);
+    final Paint paint = Paint()
+      ..color = Colors.red.withOpacity(0.95)
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 3.0;
+    canvas.drawArc(myRect, -pi / 2, sweepAngle, true, paint);
+  }
+
+  @override
+  bool shouldRepaint(TimeArcPainter oldDelegate) => false;
 }
 
 class TimerBackgroundPainter extends CustomPainter {
