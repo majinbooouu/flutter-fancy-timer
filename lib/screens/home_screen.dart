@@ -9,126 +9,117 @@ class MyHomeScreen extends StatefulWidget {
   State<MyHomeScreen> createState() => _MyHomeScreenState();
 }
 
-class _MyHomeScreenState extends State<MyHomeScreen>
-    with TickerProviderStateMixin {
-  late Timer _timer;
-  int _remainingTime = 3600; // Initial time in seconds (1 hour)
+class _MyHomeScreenState extends State<MyHomeScreen> {
+  static const twentyFiveMinutes = 3600;
+  int totalSeconds = twentyFiveMinutes;
+  bool isRunning = false;
+  late Timer timer;
 
-  @override
-  void initState() {
-    super.initState();
+  void onTick(Timer timer) {
+    if (totalSeconds == 0) {
+      setState(
+        () {
+          isRunning = false;
+          totalSeconds = twentyFiveMinutes;
+        },
+      );
+      timer.cancel();
+    } else {
+      setState(
+        () {
+          totalSeconds = totalSeconds - 1;
+        },
+      );
+    }
+  }
 
-    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-      setState(() {
-        if (_remainingTime < 1) {
-          timer.cancel();
-        } else {
-          _remainingTime--;
-        }
-      });
+  void onStartPressed() {
+    timer = Timer.periodic(
+      const Duration(seconds: 1),
+      onTick,
+    );
+    setState(
+      () {
+        isRunning = true;
+      },
+    );
+  }
+
+  void onPausePressed() {
+    timer.cancel();
+    setState(
+      () {
+        isRunning = false;
+      },
+    );
+  }
+
+  void onRefreshPressed() {
+    timer.cancel();
+    setState(() {
+      isRunning = false;
+      totalSeconds = twentyFiveMinutes;
     });
   }
 
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
+  String format(int seconds) {
+    var duration = Duration(seconds: seconds);
+    var tranDuration = duration.toString().split('.').first.substring(2, 7);
+    return tranDuration;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Flexible(
-            flex: 1,
-            child: Text(
-              '${_remainingTime ~/ 60}:${(_remainingTime % 60).toString().padLeft(2, '0')}',
-              style: const TextStyle(fontSize: 40.0),
-            ),
-          ),
-          const Flexible(
-            flex: 1,
-            child: WatchFace(
-              setBgColor: Color.fromARGB(255, 255, 255, 255),
-            ),
-          ),
-          Flexible(
-            flex: 1,
-            child: Container(
-              child: ElevatedButton(
-                onPressed: () {},
-                child: const Text('Set Timer'),
-              ),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-/*-
-void _showTimePickerDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      int selectedTime = _remainingTime;
-
-      return AlertDialog(
-        title: const Text('Set Timer'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text('Select the timer duration:'),
-            const SizedBox(height: 16.0),
-            FlutterTimerPicker(
-              duration: Duration(seconds: selectedTime),
-              onChange: (int value) {
-                selectedTime = value;
-              },
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(40),
+                  border: Border.all(width: 5)),
+              child: Column(
+                children: [
+                  WatchFace(
+                    totalSeconds: totalSeconds,
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Text(
+                    format(totalSeconds),
+                    style: const TextStyle(
+                        fontSize: 35, fontWeight: FontWeight.w600),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        iconSize: 120,
+                        color: Colors.black,
+                        onPressed: isRunning ? onPausePressed : onStartPressed,
+                        icon: Icon(isRunning
+                            ? Icons.pause_circle_outline_outlined
+                            : Icons.play_circle_outline_outlined),
+                      ),
+                      IconButton(
+                        iconSize: 40,
+                        color: Colors.black,
+                        onPressed: onRefreshPressed,
+                        icon: const Icon(Icons.refresh_outlined),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _remainingTime = selectedTime;
-                _controller.duration = Duration(seconds: _remainingTime);
-              });
-              Navigator.of(context).pop();
-            },
-            child: const Text('Set'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-class FlutterTimerPicker extends StatelessWidget {
-  final Duration duration;
-  final ValueChanged<int> onChange;
-
-  const FlutterTimerPicker(
-      {super.key, required this.duration, required this.onChange});
-
-  @override
-  Widget build(BuildContext context) {
-    int selectedTime = duration.inSeconds;
-
-    return SizedBox(
-      height: 200.0,
-      child: CupertinoTimerPicker(
-        mode: CupertinoTimerPickerMode.hm,
-        initialTimerDuration: duration,
-        onTimerDurationChanged: (Duration changedDuration) {
-          selectedTime = changedDuration.inSeconds;
-        },
       ),
     );
   }
-} */
+}
