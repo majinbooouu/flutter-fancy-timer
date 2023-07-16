@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:jintimer/widget/watch_face.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 
 class MyHomeScreen extends StatefulWidget {
   const MyHomeScreen({super.key});
@@ -10,10 +12,13 @@ class MyHomeScreen extends StatefulWidget {
 }
 
 class _MyHomeScreenState extends State<MyHomeScreen> {
-  static const twentyFiveMinutes = 500;
-  int totalSeconds = twentyFiveMinutes;
+  static const initialTime = 300;
+  String _timerString = '05:00';
+  int totalSeconds = initialTime;
+  int setSeconds = initialTime;
   bool isRunning = false;
   bool longPressed = false;
+  bool fistRunning = false;
   late Timer timer;
 
   void onTick(Timer timer) {
@@ -21,7 +26,8 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
       setState(
         () {
           isRunning = false;
-          totalSeconds = twentyFiveMinutes;
+          totalSeconds = setSeconds;
+          _timerString = format(totalSeconds);
         },
       );
       timer.cancel();
@@ -29,6 +35,7 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
       setState(
         () {
           totalSeconds = totalSeconds - 1;
+          _timerString = format(totalSeconds);
         },
       );
     }
@@ -44,10 +51,11 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
         isRunning = true;
       },
     );
+    isRunning = true;
   }
 
   void onPausePressed() {
-    timer.cancel();
+    isRunning ? timer.cancel() : ();
     setState(
       () {
         isRunning = false;
@@ -60,7 +68,8 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
     setState(() {
       isRunning = false;
       longPressed = false;
-      totalSeconds = twentyFiveMinutes;
+      totalSeconds = setSeconds;
+      _timerString = format(setSeconds);
     });
   }
 
@@ -70,17 +79,47 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
     return tranDuration;
   }
 
-  IconData? iconn(bool isRunning, bool longPressed) {
-    IconData a = Icons.play_circle_outline_outlined;
-    if (longPressed) {
-      a = Icons.play_circle_outline_outlined;
-    } else {
-      if (isRunning) {
-        a = Icons.pause_circle_outline_outlined;
-      }
-    }
-    return a;
+//
+  Future<void> _showTimerPicker(BuildContext context) async {
+    // Duration selectedDuration = Duration.zero;
+    Duration selectedDuration = Duration(seconds: totalSeconds);
+
+    await showCupertinoModalPopup(
+      context: context,
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: 300.0,
+          child: CupertinoTimerPicker(
+            mode: CupertinoTimerPickerMode.ms,
+            initialTimerDuration: selectedDuration,
+            onTimerDurationChanged: (Duration duration) {
+              setState(() {
+                HapticFeedback.selectionClick();
+                selectedDuration = duration;
+                _timerString = _formatDuration(selectedDuration);
+                totalSeconds = duration.inSeconds;
+                setSeconds = duration.inSeconds;
+              });
+            },
+          ),
+        );
+      },
+    );
   }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) {
+      if (n >= 10) return "$n";
+      return "0$n";
+    }
+
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$twoDigitMinutes:$twoDigitSeconds";
+    // return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+  }
+
+//
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +161,6 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
                         onLongPress: () {
                           longPressed = true;
                           onRefreshPressed();
-                          print('long');
                         },
                         child: IconButton(
                           onPressed:
@@ -131,9 +169,6 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
                           icon: Icon(isRunning
                               ? Icons.pause_rounded
                               : Icons.play_arrow_rounded),
-                          style: const ButtonStyle(
-                              iconColor:
-                                  MaterialStatePropertyAll(Colors.amber)),
                         ),
                       ),
                     ),
@@ -141,15 +176,20 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
                 ],
               ),
             ),
-
-            // Container(
-            //   decoration: const BoxDecoration(color: Colors.amber),
-            //   child: Text(
-            //     format(totalSeconds),
-            //     style:
-            //         const TextStyle(fontSize: 35, fontWeight: FontWeight.w600),
-            //   ),
-            // ),
+            TextButton(
+              // onPressed: () => _showTimerPicker(context),
+              onPressed: () {
+                onPausePressed();
+                _showTimerPicker(context);
+              },
+              child: Text(
+                _timerString,
+                style: const TextStyle(
+                  fontSize: 72.0,
+                  color: Colors.black,
+                ),
+              ),
+            ),
           ],
         ),
       ),
