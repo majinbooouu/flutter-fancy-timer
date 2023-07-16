@@ -16,24 +16,38 @@ class _WatchFaceState extends State<WatchFace> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      alignment: Alignment.center,
-      child: Column(
+      height: 300,
+      width: 300,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.blueGrey,
+        borderRadius: BorderRadius.circular(40),
+        border: Border.all(width: 6),
+      ),
+      child: Stack(
         children: [
-          Stack(
-            children: [
-              CustomPaint(
-                painter: TimerBackgroundPainter(Colors.white),
-                size: const Size(300.0, 300.0),
+          CustomPaint(
+            painter: TimerBackgroundPainter(Colors.white),
+            size: const Size(300.0, 300.0),
+          ),
+          CustomPaint(
+            painter: TimeArcPainter(widget.totalSeconds),
+            size: const Size(300.0, 300.0),
+          ),
+          Center(
+            child: CircleAvatar(
+              backgroundColor: Colors.black,
+              radius: 20,
+              child: IconButton(
+                onPressed: () {},
+                color: Colors.white,
+                icon: const Icon(Icons.play_arrow_rounded),
               ),
-              CustomPaint(
-                painter: TimeArcPainter(widget.totalSeconds),
-                size: const Size(300.0, 300.0),
-              ),
-              CustomPaint(
-                painter: TimerHandPainter(),
-                size: const Size(300.0, 300.0),
-              ),
-            ],
+            ),
+          ),
+          CustomPaint(
+            painter: TimerHandPainter(),
+            size: const Size(300.0, 300.0),
           ),
         ],
       ),
@@ -47,7 +61,7 @@ class TimeArcPainter extends CustomPainter {
   TimeArcPainter(this.totalSeconds);
   @override
   void paint(Canvas canvas, Size size) {
-    Rect myRect = const Offset(0.0, 0.0) & const Size(300, 300);
+    Rect myRect = const Offset(0.0, 0.0) & const Size(248, 248);
     final Paint paint = Paint()
       ..color = Colors.red.withOpacity(0.95)
       ..style = PaintingStyle.fill
@@ -66,15 +80,15 @@ class TimerBackgroundPainter extends CustomPainter {
   TimerBackgroundPainter(this.bgColor);
   @override
   void paint(Canvas canvas, Size size) {
-    final centerX = size.width / 2;
-    final centerY = size.height / 2;
+    const centerX = 124.0;
+    const centerY = 124.0;
     final radius = size.width / 2;
 
     final backgroundPaint = Paint()
       ..color = bgColor
       ..style = PaintingStyle.fill;
 
-    canvas.drawCircle(Offset(centerX, centerY), radius, backgroundPaint);
+    canvas.drawCircle(const Offset(centerX, centerY), radius, backgroundPaint);
   }
 
   @override

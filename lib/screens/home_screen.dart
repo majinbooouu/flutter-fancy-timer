@@ -10,9 +10,10 @@ class MyHomeScreen extends StatefulWidget {
 }
 
 class _MyHomeScreenState extends State<MyHomeScreen> {
-  static const twentyFiveMinutes = 3600;
+  static const twentyFiveMinutes = 500;
   int totalSeconds = twentyFiveMinutes;
   bool isRunning = false;
+  bool longPressed = false;
   late Timer timer;
 
   void onTick(Timer timer) {
@@ -58,6 +59,7 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
     timer.cancel();
     setState(() {
       isRunning = false;
+      longPressed = false;
       totalSeconds = twentyFiveMinutes;
     });
   }
@@ -68,55 +70,86 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
     return tranDuration;
   }
 
+  IconData? iconn(bool isRunning, bool longPressed) {
+    IconData a = Icons.play_circle_outline_outlined;
+    if (longPressed) {
+      a = Icons.play_circle_outline_outlined;
+    } else {
+      if (isRunning) {
+        a = Icons.pause_circle_outline_outlined;
+      }
+    }
+    return a;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
+      body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
+              height: 300,
+              width: 300,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(40),
-                  border: Border.all(width: 5)),
-              child: Column(
+                color: Colors.blueGrey,
+                borderRadius: BorderRadius.circular(40),
+                border: Border.all(width: 6),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  WatchFace(
-                    totalSeconds: totalSeconds,
+                  CustomPaint(
+                    painter: TimerBackgroundPainter(Colors.white),
+                    size: const Size(300.0, 300.0),
                   ),
-                  const SizedBox(
-                    height: 20,
+                  CustomPaint(
+                    painter: TimeArcPainter(totalSeconds),
+                    size: const Size(300.0, 300.0),
                   ),
-                  Text(
-                    format(totalSeconds),
-                    style: const TextStyle(
-                        fontSize: 35, fontWeight: FontWeight.w600),
+                  CustomPaint(
+                    painter: TimerHandPainter(),
+                    size: const Size(300.0, 300.0),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        iconSize: 120,
-                        color: Colors.black,
-                        onPressed: isRunning ? onPausePressed : onStartPressed,
-                        icon: Icon(isRunning
-                            ? Icons.pause_circle_outline_outlined
-                            : Icons.play_circle_outline_outlined),
+                  Center(
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black,
+                      radius: 20,
+                      child: GestureDetector(
+                        onLongPress: () {
+                          longPressed = true;
+                          onRefreshPressed();
+                          print('long');
+                        },
+                        child: IconButton(
+                          onPressed:
+                              isRunning ? onPausePressed : onStartPressed,
+                          color: Colors.white,
+                          icon: Icon(isRunning
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded),
+                          style: const ButtonStyle(
+                              iconColor:
+                                  MaterialStatePropertyAll(Colors.amber)),
+                        ),
                       ),
-                      IconButton(
-                        iconSize: 40,
-                        color: Colors.black,
-                        onPressed: onRefreshPressed,
-                        icon: const Icon(Icons.refresh_outlined),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
             ),
+
+            // Container(
+            //   decoration: const BoxDecoration(color: Colors.amber),
+            //   child: Text(
+            //     format(totalSeconds),
+            //     style:
+            //         const TextStyle(fontSize: 35, fontWeight: FontWeight.w600),
+            //   ),
+            // ),
           ],
         ),
       ),
