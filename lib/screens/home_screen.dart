@@ -32,10 +32,10 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
           totalSeconds = setSeconds;
           _timerString = format(totalSeconds);
           _playBellSound();
-          SystemSound.play(SystemSoundType.click);
           Vibration.vibrate();
         },
       );
+
       timer.cancel();
     } else {
       setState(
@@ -82,9 +82,9 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
   }
 
   void _playBellSound() async {
+    await player.setReleaseMode(ReleaseMode.loop);
     await player.play(
-      UrlSource(
-          'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'),
+      AssetSource('sounds/beep.wav'),
     );
   }
 
