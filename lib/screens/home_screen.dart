@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:jintimer/widget/watch_face.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:vibration/vibration.dart';
 
 class MyHomeScreen extends StatefulWidget {
   const MyHomeScreen({super.key});
@@ -28,6 +29,8 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
           isRunning = false;
           totalSeconds = setSeconds;
           _timerString = format(totalSeconds);
+          SystemSound.play(SystemSoundType.click);
+          Vibration.vibrate();
         },
       );
       timer.cancel();
@@ -160,9 +163,10 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
                         onRefreshPressed();
                       },
                       child: IconButton(
+                        enableFeedback: true,
                         style: const ButtonStyle(
                           backgroundColor:
-                              MaterialStatePropertyAll<Color>(Colors.black87),
+                              MaterialStatePropertyAll<Color>(Colors.black),
                         ),
                         splashRadius: 20,
                         splashColor: Colors.amber,
@@ -189,6 +193,12 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
                   fontSize: 72.0,
                   color: Colors.black,
                 ),
+              ),
+            ),
+            const Text(
+              'v1.2',
+              style: TextStyle(
+                fontSize: 40,
               ),
             ),
           ],
