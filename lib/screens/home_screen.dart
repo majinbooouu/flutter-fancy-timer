@@ -154,22 +154,23 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
                     size: const Size(300.0, 300.0),
                   ),
                   Center(
-                    child: CircleAvatar(
-                      backgroundColor: Colors.black,
-                      radius: 20,
-                      child: GestureDetector(
-                        onLongPress: () {
-                          longPressed = true;
-                          onRefreshPressed();
-                        },
-                        child: IconButton(
-                          onPressed:
-                              isRunning ? onPausePressed : onStartPressed,
-                          color: Colors.white,
-                          icon: Icon(isRunning
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded),
+                    child: GestureDetector(
+                      onLongPress: () {
+                        longPressed = true;
+                        onRefreshPressed();
+                      },
+                      child: IconButton(
+                        style: const ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll<Color>(Colors.black87),
                         ),
+                        splashRadius: 20,
+                        splashColor: Colors.amber,
+                        onPressed: isRunning ? onPausePressed : onStartPressed,
+                        color: Colors.white,
+                        icon: Icon(isRunning
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded),
                       ),
                     ),
                   ),
