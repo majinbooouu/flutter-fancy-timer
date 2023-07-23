@@ -14,8 +14,8 @@ class MyHomeScreen extends StatefulWidget {
 }
 
 class _MyHomeScreenState extends State<MyHomeScreen> {
-  static const initialTime = 1;
-  String _timerString = '00:01';
+  static const initialTime = 300;
+  String _timerString = '05:00';
   int totalSeconds = initialTime;
   int setSeconds = initialTime;
   bool isRunning = false;
@@ -23,6 +23,8 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
   bool fistRunning = false;
   late Timer timer;
   final player = AudioPlayer();
+  bool isDarkMode = false;
+  Timer? _inactivityTimer; // Timer variable to track user inactivity
 
   void onTick(Timer timer) {
     if (totalSeconds == 0) {
@@ -49,6 +51,7 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
 
   void onStartPressed() {
     player.stop();
+    _resetInactivityTimer();
     timer = Timer.periodic(
       const Duration(seconds: 1),
       onTick,
@@ -63,6 +66,7 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
 
   void onPausePressed() {
     player.stop();
+    _resetInactivityTimer();
     isRunning ? timer.cancel() : ();
     setState(
       () {
@@ -73,6 +77,7 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
 
   void onRefreshPressed() {
     timer.cancel();
+    _resetInactivityTimer();
     setState(() {
       isRunning = false;
       longPressed = false;
@@ -86,6 +91,24 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
     await player.play(
       AssetSource('sounds/beep.wav'),
     );
+  }
+
+  // Function to reset the inactivity timer
+  void _resetInactivityTimer() {
+    _inactivityTimer?.cancel(); // Cancel the previous timer, if any
+    _startInactivityTimer();
+    isDarkMode = false; // Start a new timer
+    print('turn off dark mode');
+  }
+
+  // Function to start the inactivity timer
+  void _startInactivityTimer() {
+    _inactivityTimer = Timer(const Duration(seconds: 10), () {
+      // This function will be called after 10 seconds of inactivity
+      // Put your desired function call or logic here to inform the user
+      isDarkMode = true;
+      print('turn on dark mode');
+    });
   }
 
   String format(int seconds) {
@@ -141,87 +164,90 @@ class _MyHomeScreenState extends State<MyHomeScreen> {
     return GestureDetector(
       onTap: () {
         setState(() {
+          _resetInactivityTimer();
           player.stop();
         });
       },
       child: Scaffold(
-        body: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                height: 300,
-                width: 300,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.blueGrey,
-                  borderRadius: BorderRadius.circular(40),
-                  border: Border.all(width: 6),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CustomPaint(
-                      painter: TimerBackgroundPainter(Colors.white),
-                      size: const Size(300.0, 300.0),
-                    ),
-                    CustomPaint(
-                      painter: TimeArcPainter(totalSeconds),
-                      size: const Size(300.0, 300.0),
-                    ),
-                    CustomPaint(
-                      painter: TimerHandPainter(),
-                      size: const Size(300.0, 300.0),
-                    ),
-                    Center(
-                      child: GestureDetector(
-                        onLongPress: () {
-                          longPressed = true;
-                          onRefreshPressed();
-                        },
-                        child: IconButton(
-                          enableFeedback: true,
-                          style: const ButtonStyle(
-                            backgroundColor:
-                                MaterialStatePropertyAll<Color>(Colors.black),
+        body: AnimatedContainer(
+          duration: const Duration(milliseconds: 1000),
+          color: isDarkMode ? Colors.black : Colors.white,
+          child: Center(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 1000),
+                  height: 300,
+                  width: 300,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? Colors.black : Colors.amber,
+                    borderRadius: BorderRadius.circular(40),
+                    border: Border.all(width: 6),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CustomPaint(
+                        painter: TimerBackgroundPainter(
+                            isDarkMode ? Colors.black : Colors.white),
+                        size: const Size(300.0, 300.0),
+                      ),
+                      CustomPaint(
+                        painter: TimeArcPainter(totalSeconds, isDarkMode),
+                        size: const Size(300.0, 300.0),
+                      ),
+                      CustomPaint(
+                        painter: TimerHandPainter(isDarkMode),
+                        size: const Size(300.0, 300.0),
+                      ),
+                      Center(
+                        child: GestureDetector(
+                          onLongPress: () {
+                            longPressed = true;
+                            onRefreshPressed();
+                          },
+                          child: IconButton(
+                            enableFeedback: true,
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStatePropertyAll<Color>(
+                                  isDarkMode
+                                      ? Colors.grey.shade400
+                                      : Colors.black),
+                            ),
+                            splashRadius: 20,
+                            splashColor: Colors.white,
+                            onPressed:
+                                isRunning ? onPausePressed : onStartPressed,
+                            color: isDarkMode ? Colors.black : Colors.white,
+                            icon: Icon(isRunning
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded),
                           ),
-                          splashRadius: 20,
-                          splashColor: Colors.white,
-                          onPressed:
-                              isRunning ? onPausePressed : onStartPressed,
-                          color: Colors.white,
-                          icon: Icon(isRunning
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              TextButton(
-                // onPressed: () => _showTimerPicker(context),
-                onPressed: () {
-                  player.stop();
-                  onPausePressed();
-                  _showTimerPicker(context);
-                },
-                child: Text(
-                  _timerString,
-                  style: const TextStyle(
-                    fontSize: 72.0,
-                    color: Colors.black,
+                    ],
                   ),
                 ),
-              ),
-              const Text(
-                'v1.2',
-                style: TextStyle(
-                  fontSize: 40,
+                TextButton(
+                  // onPressed: () => _showTimerPicker(context),
+                  onPressed: () {
+                    player.stop();
+                    onPausePressed();
+                    _showTimerPicker(context);
+                  },
+                  child: Text(
+                    _timerString,
+                    style: TextStyle(
+                      fontSize: 50.0,
+                      color: isDarkMode ? Colors.grey.shade400 : Colors.black,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

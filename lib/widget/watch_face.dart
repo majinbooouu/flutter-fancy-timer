@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-class WatchFace extends StatefulWidget {
+class WatchFace extends StatelessWidget {
   final int totalSeconds;
+  final bool isDarkMode;
   const WatchFace({
     super.key,
     required this.totalSeconds,
+    required this.isDarkMode,
   });
 
-  @override
-  State<WatchFace> createState() => _WatchFaceState();
-}
-
-class _WatchFaceState extends State<WatchFace> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -31,7 +28,7 @@ class _WatchFaceState extends State<WatchFace> {
             size: const Size(300.0, 300.0),
           ),
           CustomPaint(
-            painter: TimeArcPainter(widget.totalSeconds),
+            painter: TimeArcPainter(totalSeconds, isDarkMode),
             size: const Size(300.0, 300.0),
           ),
           Center(
@@ -46,7 +43,7 @@ class _WatchFaceState extends State<WatchFace> {
             ),
           ),
           CustomPaint(
-            painter: TimerHandPainter(),
+            painter: TimerHandPainter(isDarkMode),
             size: const Size(300.0, 300.0),
           ),
         ],
@@ -57,13 +54,19 @@ class _WatchFaceState extends State<WatchFace> {
 
 class TimeArcPainter extends CustomPainter {
   final int totalSeconds;
+  final bool isDarkMode;
 
-  TimeArcPainter(this.totalSeconds);
+  TimeArcPainter(
+    this.totalSeconds,
+    this.isDarkMode,
+  );
   @override
   void paint(Canvas canvas, Size size) {
     Rect myRect = const Offset(0.0, 0.0) & const Size(248, 248);
     final Paint paint = Paint()
-      ..color = Colors.red.withOpacity(0.95)
+      ..color = isDarkMode
+          ? Colors.red.shade900.withOpacity(0.95)
+          : Colors.redAccent.shade400.withOpacity(0.95)
       ..style = PaintingStyle.fill
       ..strokeWidth = 3.0;
     canvas.drawArc(
@@ -97,8 +100,10 @@ class TimerBackgroundPainter extends CustomPainter {
 
 class TimerHandPainter extends CustomPainter {
   final Animation<int>? animation;
+  final bool isDarkMode;
 
-  TimerHandPainter({this.animation}) : super(repaint: animation);
+  TimerHandPainter(this.isDarkMode, {this.animation})
+      : super(repaint: animation);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -107,12 +112,12 @@ class TimerHandPainter extends CustomPainter {
     final radius = size.width / 2;
 
     final hourHandPaint = Paint()
-      ..color = Colors.black
+      ..color = isDarkMode ? Colors.grey.shade400 : Colors.black
       ..style = PaintingStyle.stroke
       ..strokeWidth = 5.0;
 
     final minuteHandPaint = Paint()
-      ..color = Colors.black
+      ..color = isDarkMode ? Colors.grey.shade400 : Colors.black
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
